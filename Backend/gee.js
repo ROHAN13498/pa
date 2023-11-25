@@ -1,7 +1,16 @@
 var ee = require('@google/earthengine');
 const { json } = require('body-parser');
-
+const jsonData = require('./data.json');
 console.log("gee.js");
+function capitalizeFirstLetter(inputString) {
+  // Convert the entire string to lowercase
+  const lowercasedString = inputString.toLowerCase();
+
+  // Capitalize the first letter and concatenate the rest of the string
+  const capitalizedString = lowercasedString.charAt(0).toUpperCase() + lowercasedString.slice(1);
+
+  return capitalizedString;
+}
 
 async function runThis(name) {
   return new Promise(async (resolve, reject) => {
@@ -9,10 +18,12 @@ async function runThis(name) {
       if (name == undefined) {
         return resolve(0);
       }
-
-      var districts = await ee.FeatureCollection("users/karanknit/india_dist_sorted");
-      var ROI = await districts.filter(ee.Filter.eq('DISTRICT', name));
-      var landarea=ROI.geometry().area().divide(10000).getInfo();
+      const capname=capitalizeFirstLetter(name);
+      const coordinates=jsonData[capname].features[0].geometry.coordinates;
+      // var districts = await ee.FeatureCollection("users/karanknit/india_dist_sorted");
+      var ROI = ee.Geometry.MultiPolygon(coordinates);
+      var landarea=ROI.area().divide(10000).getInfo();
+      // console.log(ROI);
       console.log(landarea);
 
       var s1Collection = await ee.ImageCollection('COPERNICUS/S1_GRD')
